@@ -5,4 +5,5 @@ Notepad app for android.
 To be familier with Jetpack Compose and Kotlin.
 
 # using
-## ViewModel
+ViewModel
+Room
