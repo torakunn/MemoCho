@@ -20,17 +20,14 @@ import kotlinx.coroutines.flow.update
 class ViewModel(val context: Context) : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
-    var titles by mutableStateOf(listOf<String>())
-        private set
-    var title by mutableStateOf("")
-        private set
-    var content by mutableStateOf("")
-        private set
-
     val db = MainActivity.db
     val noteDAO = db.NoteDAO()
-    val del = ::deleteNote
 
+
+//    StartScreenで使う---------------------------------------------
+//    関数オブジェクトを作って、ラムダ式で呼び出す。他に方法が分からない
+    val OnTitleLongClicked = ::onTitleLongClicked
+    val OnTitleClicked = ::onTitleClicked
 
 
 
@@ -56,7 +53,12 @@ class ViewModel(val context: Context) : ViewModel() {
         val note1 = Note(title = "this is title", content = "hi")
         viewModelScope.launch  {
             noteDAO.insertAll(note1)
+            val notes = noteDAO.getAll()
+            _uiState.update { currentState ->
+                currentState.copy(notes = notes)
+            }
         }
+
         Toast.makeText(context,"add note", Toast.LENGTH_LONG).show()
     }
 
@@ -64,33 +66,60 @@ class ViewModel(val context: Context) : ViewModel() {
     fun loadNote (): () -> Unit = {
 //        データベースからnoteListの内容を読み込む処理
         viewModelScope.launch  {
-            var noteList = listOf<Note>()
-            noteList = noteDAO.getAll()
-            Log.d("titles","coroutine $noteList")
-            val titles = mutableListOf<String>()
-
-            for (note in noteList){
-                titles.add(note.title.toString())
-            }
-
-            Log.d("titles","titles in coroutine $titles")
+            val notes = noteDAO.getAll()
+            Log.d("titles","coroutine start")
             _uiState.update { currentState ->
-                currentState.copy(titles = titles,note = noteList)
+                currentState.copy(notes = notes)
             }
         }
-
-
-        Log.d("titles","before return ${titles.toString()}")
     }
 
-    fun deleteNote(id: Long){
+    fun onTitleClicked(id: Long) {
+        viewModelScope.launch {
+                val note = noteDAO.getNoteById(id)
+                val contentString = note.content ?: ""
+                _uiState.update { currentState ->
+                    currentState.copy(id = id, content = contentString,title = note.title ?: "無題")
+                }
+        }
+        Toast.makeText(context,"open note id = $id", Toast.LENGTH_LONG).show()
+    }
+    fun onTitleLongClicked(id: Long){
+        _uiState.update { currentState ->
+            currentState.copy(openAlartDialog = true, id = id)
+        }
+    }
+
+    fun onEditButtonClicked() {
+        _uiState.update { currentState ->
+            currentState.copy(openAlartDialog = false)
+        }
+//        //データベースから指定のnoteを編集する処理
+//        viewModelScope.launch  {
+//            noteDAO.updateNote(Note(id = id, title = title))
+//        }
+    }
+    fun onDeleteButtonClicked() {
+        _uiState.update { currentState ->
+            currentState.copy(openAlartDialog = false)
+        }
         //データベースから指定のnoteを削除する処理
         viewModelScope.launch  {
-            noteDAO.delete(Note(id = id))
+            noteDAO.delete(Note(id = uiState.value.id))
         }
-        Log.d("titles","id = $id")
     }
+    fun onDismissRequest(){
+        _uiState.update { currentState ->
+            currentState.copy(openAlartDialog = false)
+        }
+
+    }
+//-----------------------------------------------------------------
+
+//    MemoScreenで使う---------------------------------------------
 
 
+
+//-----------------------------------------------------------------
 
 }

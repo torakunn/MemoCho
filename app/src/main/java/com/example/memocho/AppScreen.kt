@@ -67,7 +67,7 @@ fun AppScreen(
             MyButtomAppBar(
                 modifier,
                 viewModel,
-                onMemoButtonClicked = { navController.navigate(MemoChoScreen.Start.name) },
+                onMemoButtonClicked = { navController.navigate(MemoChoScreen.Start.name)},
                 onSettingButtonClicked = { navController.navigate(MemoChoScreen.Setting.name) }
             )
                     },
@@ -84,17 +84,27 @@ fun AppScreen(
         ) {
             composable(route = MemoChoScreen.Start.name) {
                 StartScreen(
-                    titles = appUiState.titles,
-                    onButtonClicked = { navController.navigate(MemoChoScreen.Memo.name)},
-                    onLongButtonClicked = viewModel.del,
-                    loadNote = viewModel.loadNote()
+                    notes = appUiState.notes,
+                    onButtonClicked = viewModel.OnTitleClicked,
+                    navToMemo = { navController.navigate(MemoChoScreen.Memo.name) },
+                    onLongButtonClicked = viewModel.OnTitleLongClicked,
+                    loadNote = viewModel.loadNote(),
+                    openAlertDialog = appUiState.openAlartDialog,
+                    onEditButtonClicked = { viewModel.onEditButtonClicked() },
+                    onDeleteButtonClicked = { viewModel.onDeleteButtonClicked() },
+                    onDismissRequest = { viewModel.onDismissRequest() }
                 )
             }
             composable(route = MemoChoScreen.Setting.name) {
-                SettingScreen()
+                SettingScreen(
+                )
             }
             composable(route = MemoChoScreen.Memo.name) {
-                MemoScreen()
+                MemoScreen(
+                    notes = appUiState.notes,
+                    id = appUiState.id,
+                    content = appUiState.content
+                )
             }
         }
     }
