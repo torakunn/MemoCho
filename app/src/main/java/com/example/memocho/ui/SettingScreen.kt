@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 fun SettingScreen(
     modifier: Modifier = Modifier,
 ) {
+
     Text(text = "SettingScreen")
 
 }
