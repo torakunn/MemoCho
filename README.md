@@ -1,11 +1,10 @@
-# What's this
-Notepad app for android.
+# android向けのよくあるメモアプリ
 
-# Purpose
-To be familier with Jetpack Compose and Kotlin.
+## 制作理由
+Jetpack Composeに慣れたかった
+## 使ったライブラリやらなんやら
+ViewModel 
 
-# using
-ViewModel
 Room
-HostNav
-NavController
+
+HostNav＆NavController
