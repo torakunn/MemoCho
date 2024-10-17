@@ -3,17 +3,12 @@ package com.example.memocho.ui
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.Room
-import com.example.memocho.AppDatabase
 import com.example.memocho.MainActivity
 import com.example.memocho.database.model.Note
 import kotlinx.coroutines.launch
@@ -34,6 +29,7 @@ class ViewModel(val context: Context) : ViewModel() {
 
     val db = MainActivity.db
     val noteDAO = db.NoteDAO()
+    val del = ::deleteNote
 
 
 
@@ -65,7 +61,7 @@ class ViewModel(val context: Context) : ViewModel() {
     }
 
 
-    fun loadNote() {
+    fun loadNote (): () -> Unit = {
 //        データベースからnoteListの内容を読み込む処理
         viewModelScope.launch  {
             var noteList = listOf<Note>()
@@ -79,7 +75,7 @@ class ViewModel(val context: Context) : ViewModel() {
 
             Log.d("titles","titles in coroutine $titles")
             _uiState.update { currentState ->
-                currentState.copy(titles = titles)
+                currentState.copy(titles = titles,note = noteList)
             }
         }
 
@@ -87,11 +83,14 @@ class ViewModel(val context: Context) : ViewModel() {
         Log.d("titles","before return ${titles.toString()}")
     }
 
-    private fun deleteNote(id: Int){
+    fun deleteNote(id: Long){
         //データベースから指定のnoteを削除する処理
         viewModelScope.launch  {
-            noteDAO.delete(Note(id = id.toLong()))
+            noteDAO.delete(Note(id = id))
         }
+        Log.d("titles","id = $id")
     }
+
+
 
 }

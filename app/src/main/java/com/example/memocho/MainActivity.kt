@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.room.Room
+import com.example.memocho.database.AppDatabase
 import com.example.memocho.ui.theme.MemoChoTheme
 import com.example.memocho.ui.AppScreen
 
@@ -28,7 +29,7 @@ class MainActivity : ComponentActivity() {
         }
         db = Room.databaseBuilder(
             this,
-            AppDatabase::class.java, "database-name"
+            AppDatabase::class.java, "MemoAppDatabase"
         ).build()
     }
 

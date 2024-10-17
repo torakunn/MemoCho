@@ -1,4 +1,4 @@
-package com.example.memocho
+package com.example.memocho.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
