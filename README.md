@@ -7,3 +7,5 @@ To be familier with Jetpack Compose and Kotlin.
 # using
 ViewModel
 Room
+HostNav
+NavController
