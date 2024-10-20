@@ -3,7 +3,6 @@ package com.example.memocho.ui
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,8 +11,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.memocho.MainActivity
 import com.example.memocho.database.model.Note
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.update
 
 
@@ -28,8 +25,6 @@ class ViewModel(val context: Context) : ViewModel() {
 //    関数オブジェクトを作って、ラムダ式で呼び出す。他に方法が分からない
     val OnTitleLongClicked = ::onTitleLongClicked
     val OnTitleClicked = ::onTitleClicked
-
-
 
 
     fun onMemoButtonClicked() {
@@ -50,7 +45,7 @@ class ViewModel(val context: Context) : ViewModel() {
     }
 
     fun onAddButtonClicked() {
-        val note1 = Note(title = "this is title", content = "hi")
+        val note1 = Note(title = "新規ノート", content = "")
         viewModelScope.launch  {
             noteDAO.insertAll(note1)
             val notes = noteDAO.getAll()
@@ -82,7 +77,7 @@ class ViewModel(val context: Context) : ViewModel() {
                     currentState.copy(id = id, content = contentString,title = note.title ?: "無題")
                 }
         }
-        Toast.makeText(context,"open note id = $id", Toast.LENGTH_LONG).show()
+//        Toast.makeText(context,"open note id = $id", Toast.LENGTH_LONG).show()
     }
     fun onTitleLongClicked(id: Long){
         _uiState.update { currentState ->
@@ -92,12 +87,8 @@ class ViewModel(val context: Context) : ViewModel() {
 
     fun onEditButtonClicked() {
         _uiState.update { currentState ->
-            currentState.copy(openAlartDialog = false)
+            currentState.copy(openAlartDialog = false, openEditDialog = true)
         }
-//        //データベースから指定のnoteを編集する処理
-//        viewModelScope.launch  {
-//            noteDAO.updateNote(Note(id = id, title = title))
-//        }
     }
     fun onDeleteButtonClicked() {
         _uiState.update { currentState ->
@@ -108,17 +99,43 @@ class ViewModel(val context: Context) : ViewModel() {
             noteDAO.delete(Note(id = uiState.value.id))
         }
     }
-    fun onDismissRequest(){
+    fun onDismissRequest() {
         _uiState.update { currentState ->
-            currentState.copy(openAlartDialog = false)
+            currentState.copy(openAlartDialog = false, openEditDialog = false)
         }
-
+    }
+    fun onTitleChange(title: String = uiState.value.title) {
+        _uiState.update { currentState ->
+            currentState.copy(title = title)
+        }
+        saveNote()
     }
 //-----------------------------------------------------------------
 
 //    MemoScreenで使う---------------------------------------------
+    val OnContentChange = ::onContentChange
+    val OnTitleChange = ::onTitleChange
+    fun onContentChange(newContent: String = uiState.value.content) {
+    //    キーボードを出していても一番下の行が見えるように末尾に大量の改行を挟む
+        val newContent = newContent + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+        _uiState.update { currentState ->
+            currentState.copy(content = newContent)
+        }
+    }
 
+    fun saveNote(){
+        val note = Note(id = uiState.value.id, title = uiState.value.title, content = uiState.value.content)
+        viewModelScope.launch  {
+            noteDAO.updateNote(note)
+        }
+        Toast.makeText(context,"保存しました", Toast.LENGTH_SHORT).show()
+    }
 
+    fun setShowingDisplay(showingScreen: MemoChoScreen) {
+        _uiState.update { currentState ->
+            currentState.copy(showingScreen = showingScreen)
+        }
+    }
 
 //-----------------------------------------------------------------
 

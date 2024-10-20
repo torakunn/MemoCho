@@ -12,6 +12,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -59,8 +60,32 @@ fun AppScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    Text("メモ帳！")
+                    when (appUiState.showingScreen) {
+                        MemoChoScreen.Start -> Text("メモ一覧")
+                        MemoChoScreen.Memo -> Text(appUiState.title)
+                        MemoChoScreen.Setting -> Text("設定")
+                        else -> {}
+                    }
+                },
+                actions = {
+                    when (appUiState.showingScreen) {
+                        MemoChoScreen.Start -> {}
+                        MemoChoScreen.Memo -> {
+                            IconButton(onClick = { viewModel.saveNote() }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.icon_save),
+                                    contentDescription = "save",
+                                    modifier = Modifier.padding(4.dp)
+                                )
+                            }
+
+                        }
+
+                        MemoChoScreen.Setting -> {}
+                        else -> {}
+                    }
                 }
+
             )
         },
         bottomBar = {
@@ -83,6 +108,7 @@ fun AppScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(route = MemoChoScreen.Start.name) {
+                viewModel.setShowingDisplay(MemoChoScreen.Start)
                 StartScreen(
                     notes = appUiState.notes,
                     onButtonClicked = viewModel.OnTitleClicked,
@@ -90,20 +116,27 @@ fun AppScreen(
                     onLongButtonClicked = viewModel.OnTitleLongClicked,
                     loadNote = viewModel.loadNote(),
                     openAlertDialog = appUiState.openAlartDialog,
+                    openEditDialog = appUiState.openEditDialog,
                     onEditButtonClicked = { viewModel.onEditButtonClicked() },
                     onDeleteButtonClicked = { viewModel.onDeleteButtonClicked() },
-                    onDismissRequest = { viewModel.onDismissRequest() }
+                    onDismissRequest = { viewModel.onDismissRequest() },
+                    onTitleChange = viewModel.OnTitleChange,
+                    title = appUiState.title,
+                    id = appUiState.id
                 )
             }
             composable(route = MemoChoScreen.Setting.name) {
+                viewModel.setShowingDisplay(MemoChoScreen.Setting)
                 SettingScreen(
                 )
             }
             composable(route = MemoChoScreen.Memo.name) {
+                viewModel.setShowingDisplay(MemoChoScreen.Memo)
                 MemoScreen(
                     notes = appUiState.notes,
                     id = appUiState.id,
-                    content = appUiState.content
+                    content = appUiState.content,
+                    onValueChange = viewModel.OnContentChange,
                 )
             }
         }
