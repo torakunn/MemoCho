@@ -9,4 +9,7 @@ data class UiState(
     val titles: List<String>  = listOf(),
     val notes: List<Note> = listOf(),
     val openAlartDialog: Boolean = false,
+    val openEditDialog: Boolean = false,
+    val keyboardIsShow: Boolean = false,
+    val showingScreen: MemoChoScreen = MemoChoScreen.Start,
     )
