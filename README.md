@@ -9,6 +9,8 @@ Room
 
 HostNav＆NavController
 
+## こだわり
+ボタンをイラストにしたりして、直観的に操作できるよう意識した。
 ## Todo
 ・MemoScreenの作成
   最低限：文書編集、タイトル変更
