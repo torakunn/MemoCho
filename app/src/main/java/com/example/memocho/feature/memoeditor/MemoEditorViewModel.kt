@@ -33,6 +33,18 @@ class MemoEditorViewModel(private val memoRepository: MemoRepository): ViewModel
         }
     }
 
+    fun showToast() {
+        _uiState.update { currentState ->
+            currentState.copy(showToast = true)
+        }
+    }
+
+    fun hideToast() {
+        _uiState.update { currentState ->
+            currentState.copy(showToast = false)
+        }
+    }
+
     fun saveMemo(){
         viewModelScope.launch {
             memoRepository.updateNote(Memo(id = uiState.value.id, title = uiState.value.title, content = uiState.value.content))

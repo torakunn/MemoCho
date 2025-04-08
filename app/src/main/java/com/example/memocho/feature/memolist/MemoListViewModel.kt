@@ -1,5 +1,7 @@
 package com.example.memocho.feature.memolist
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -16,13 +18,26 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
+sealed class DialogState{
+    object None: DialogState()
+    object Operation: DialogState()
+    object Edit: DialogState()
+}
+
+
 class MemoListViewModel(private val memoRepository: MemoRepository): ViewModel() {
     private val _uiState = MutableStateFlow(MemoListState())
     val uiState: StateFlow<MemoListState> = _uiState.asStateFlow()
 
+    private val _dialogState = mutableStateOf<DialogState>(DialogState.None)
+    val dialogState: State<DialogState> = _dialogState
+
 
     init {
         loadMemoList()
+        _uiState.update { currentState ->
+            currentState.copy(completeInitialLoading = true)
+        }
     }
 
 
@@ -48,9 +63,7 @@ class MemoListViewModel(private val memoRepository: MemoRepository): ViewModel()
 
 
     fun onDeleteButtonClicked() {
-        _uiState.update { currentState ->
-            currentState.copy(openAlertDialog = false)
-        }
+        _dialogState.value = DialogState.None
         //データベースから指定のnoteを削除する処理
         viewModelScope.launch  {
             memoRepository.delete(Memo(id = uiState.value.id))
@@ -61,22 +74,23 @@ class MemoListViewModel(private val memoRepository: MemoRepository): ViewModel()
     fun onEditButtonClicked() {
         viewModelScope.launch {
             val memo = memoRepository.getNoteById(uiState.value.id)
-            _uiState.update { currentState ->
-                currentState.copy(openAlertDialog = false, openEditDialog = true,title = memo.title ?: "")
-            }
+            _dialogState .value = DialogState.Edit
         }
     }
 
     fun onDismissRequest() {
-        _uiState.update { currentState ->
-            currentState.copy(openAlertDialog = false, openEditDialog = false)
-        }
+        _dialogState.value = DialogState.None
     }
 
     fun onTitleLongClicked(id: Long){
-        _uiState.update { currentState ->
-            currentState.copy(openAlertDialog = true, id = id)
+        viewModelScope.launch {
+            val memo = memoRepository.getNoteById(id)
+            _uiState.update { currentState ->
+                currentState.copy(id = id, title = memo.title ?: "")
+            }
+            _dialogState.value = DialogState.Operation
         }
+
     }
 
     private fun loadMemoList() {

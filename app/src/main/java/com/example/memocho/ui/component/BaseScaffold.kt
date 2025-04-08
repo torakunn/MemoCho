@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,6 +33,8 @@ import com.example.memocho.constants.Destinations
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaseScaffold(
+    modifier: Modifier = Modifier,
+    showBottomBar : Boolean = true,
     navController: NavHostController,
     title: String,
     showSaveButton: Boolean = false,
@@ -65,10 +68,13 @@ fun BaseScaffold(
             )
         },
         bottomBar = {
-            MyBottomAppBar(
-                navController = navController,
-                saveMemo = saveMemo
-            )
+            if(showBottomBar){
+                MyBottomAppBar(
+                    navController = navController,
+                    saveMemo = saveMemo
+                )
+            }
+
         },
         floatingActionButton = {
             if(showFab){
@@ -76,7 +82,8 @@ fun BaseScaffold(
                     Icon(Icons.Default.Add, contentDescription = "Add")
                 }
             }
-        }
+        },
+        modifier = modifier
         ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()

@@ -4,4 +4,5 @@ data class MemoEditorState(
     val id: Long = 0,
     val title: String = "",
     val content: String = "",
+    val showToast: Boolean = false,
 )
