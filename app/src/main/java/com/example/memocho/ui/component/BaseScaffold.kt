@@ -32,6 +32,8 @@ import com.example.memocho.constants.Destinations
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaseScaffold(
+    modifier: Modifier = Modifier,
+    showBottomBar : Boolean = true,
     navController: NavHostController,
     title: String,
     showSaveButton: Boolean = false,
@@ -65,10 +67,13 @@ fun BaseScaffold(
             )
         },
         bottomBar = {
-            MyBottomAppBar(
-                navController = navController,
-                saveMemo = saveMemo
-            )
+            if(showBottomBar){
+                MyBottomAppBar(
+                    navController = navController,
+                    saveMemo = saveMemo
+                )
+            }
+
         },
         floatingActionButton = {
             if(showFab){
@@ -76,7 +81,8 @@ fun BaseScaffold(
                     Icon(Icons.Default.Add, contentDescription = "Add")
                 }
             }
-        }
+        },
+        modifier = modifier
         ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()

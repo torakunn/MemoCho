@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -34,6 +35,7 @@ import com.example.memocho.data.model.Memo
 import com.example.memocho.ui.component.BaseScaffold
 
 
+
 // At the top level of your kotlin file:
 @Composable
 fun MemoListScreen(
@@ -43,71 +45,84 @@ fun MemoListScreen(
 ) {
     val uiState by memoListviewModel.uiState.collectAsState()
 
+    val dialogState by memoListviewModel.dialogState
+
+    when (dialogState){
+        is DialogState.Operation -> {
+            OperationAlertDialog(
+                onDismissRequest = { memoListviewModel.onDismissRequest() },
+                onEditButtonClicked = { memoListviewModel.onEditButtonClicked() },
+                onDeletionButtonClicked = { memoListviewModel.onDeleteButtonClicked() },
+                dialogTitle = "操作を選択してください",
+                icon = Icons.Default.Info
+            )
+        }
+
+        is DialogState.Edit -> {
+            EditAlertDialog(
+                onDismissRequest = { memoListviewModel.onDismissRequest() },
+                memoTitle = uiState.title,
+                onTitleChange = { memoListviewModel.onTitleChange(it) })
+        }
+        else -> {}
+    }
+
     BaseScaffold(
         navController = navController,
         title = "メモ一覧",
         showFab = true,
         fabClicked = { memoListviewModel.onFabClicked() }
     ) {
-        when {
-            uiState.openAlertDialog -> {
-                OperationAlertDialog(
-                    onDismissRequest = { memoListviewModel.onDismissRequest() },
-                    onEditButtonClicked = { memoListviewModel.onEditButtonClicked() },
-                    onDeletionButtonClicked = { memoListviewModel.onDeleteButtonClicked() },
-                    dialogTitle = "操作を選択してください",
-                    icon = Icons.Default.Info
-                )
-            }
-
-            uiState.openEditDialog -> {
-                EditAlertDialog(
-                    onDismissRequest = { memoListviewModel.onDismissRequest() },
-                    memoTitle = uiState.title,
-                    onTitleChange = { memoListviewModel.onTitleChange(it) })
-            }
-        }
-
-        NoteList(
+        MemoList(
             modifier,
             uiState.memos,
-            { memoListviewModel.onTitleLongClicked(it) },
-            { navController.navigate(Destinations.MemoEditor.name + "/${it}") }
+            { navController.navigate(Destinations.MemoEditor.name + "/${it}") },
+            { memoListviewModel.onTitleLongClicked(it) }
         )
     }
-
 }
 
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NoteList(
+fun MemoList(
     modifier: Modifier = Modifier,
     memos: List<Memo>,
-    onLongButtonClicked: (Long) -> Unit = {},
-    navToMemo: (Long) -> Unit = {}
+    onClick: (Long) -> Unit = {},
+    onLongClick: (Long) -> Unit = {}
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
     ) {
-        items(memos.size) { idx ->
-            Text(
-                text="${memos[idx].title}",
-                color = Color.Black,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .combinedClickable(
-                        onClick = { navToMemo(memos[idx].id) },
-                        onLongClick = { onLongButtonClicked(memos[idx].id) }
-                    )
-                    .padding(8.dp)
-            )
-            HorizontalDivider(thickness = 2.dp)
+        itemsIndexed(memos) { _: Int, memo: Memo ->
+            MemoItem(memo, onClick, onLongClick)
         }
     }
 }
 
+
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+private fun MemoItem(
+    memo: Memo,
+    onClick: (Long) -> Unit = {},
+    onLongClick: (Long) -> Unit = {}
+) {
+    Column {
+        Text(
+            text = "${memo.title}",
+            color = Color.Black,
+            modifier = Modifier
+                .fillMaxSize()
+                .combinedClickable(
+                    onClick = { onClick(memo.id) },
+                    onLongClick = { onLongClick(memo.id) }
+                )
+                .padding(8.dp)
+        )
+        HorizontalDivider(thickness = 2.dp)
+    }
+
+}
 
 
 @Composable
@@ -137,19 +152,17 @@ fun EditAlertDialog(
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.8f)
                 .wrapContentHeight(),
             shape = RoundedCornerShape(16.dp),
         ) {
             Box(modifier = Modifier.padding(16.dp)){
-                Column {
-                    Text("タイトルを入力してください")
                     TextField(
                         value = memoTitle,
                         onValueChange = { onTitleChange(it) },
+                        singleLine = true,
+                        label = { Text("タイトルを入力してください") }
                     )
-                }
-
             }
         }
     }
