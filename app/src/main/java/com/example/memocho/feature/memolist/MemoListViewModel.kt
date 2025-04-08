@@ -74,6 +74,9 @@ class MemoListViewModel(private val memoRepository: MemoRepository): ViewModel()
     fun onEditButtonClicked() {
         viewModelScope.launch {
             val memo = memoRepository.getNoteById(uiState.value.id)
+            _uiState.update { currentState ->
+                currentState.copy(title = memo.title ?: "")
+            }
             _dialogState .value = DialogState.Edit
         }
     }
@@ -83,13 +86,10 @@ class MemoListViewModel(private val memoRepository: MemoRepository): ViewModel()
     }
 
     fun onTitleLongClicked(id: Long){
-        viewModelScope.launch {
-            val memo = memoRepository.getNoteById(id)
-            _uiState.update { currentState ->
-                currentState.copy(id = id, title = memo.title ?: "")
-            }
             _dialogState.value = DialogState.Operation
-        }
+            _uiState.update { currentState ->
+                currentState.copy(id = id)
+            }
 
     }
 
